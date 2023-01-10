@@ -1,3 +1,4 @@
+import 'package:daily_meal_app/models/food.dart';
 import 'package:daily_meal_app/models/meal_day.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -40,7 +41,7 @@ class QueryBuilder {
     ''');
   }
 
-  Future <dynamic> meal_days() async {
+  Future <dynamic> mealDays() async {
 
     Database db = await instance.getDatabase();
 
@@ -56,6 +57,24 @@ class QueryBuilder {
             dinner: map[i]['dinner'],
         );
         }) : [];
+  }
+
+  Future <dynamic> food(int id) async {
+
+    Database db = await instance.getDatabase();
+
+    final List<Map<String, dynamic>> map = await db.query('foods', where: "id = ?", whereArgs: [id]);
+
+    return map.isNotEmpty ? Food.fromMapObject(map[0]) : null;
+  }
+
+  Future addMeal (MealDay meal) async {
+
+    Database db = await instance.getDatabase();
+
+    int status = await db.insert('meal_days',meal.toMap());
+
+    return status;
   }
 
 }
