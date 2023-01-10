@@ -14,4 +14,24 @@ class MealDay {
     this.dinner
   });
 
+  factory MealDay.fromMapObject(Map <String, Object?> json) {
+    return MealDay(
+      id: json['id'] as int,
+      date: json['date'] as String,
+      breakfast: json['breakfast'] as int,
+      lunch: json['lunch'] as int,
+      dinner: json['dinner'] as int,
+    );
+  }
+
+  Map <String, dynamic> toMap() {
+    return {
+      'id' : id,
+      'date' : date,
+      'breakfast' : breakfast,
+      'lunch' : lunch,
+      'dinner' : dinner
+    };
+  }
+
 }
