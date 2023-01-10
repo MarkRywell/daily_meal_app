@@ -1,6 +1,6 @@
 class Food {
 
-  final int id;
+  int? id;
   final String name;
   final String foodType;
   String? photo;

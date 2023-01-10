@@ -1,4 +1,5 @@
 import 'package:daily_meal_app/models/query_builder.dart';
+import 'package:daily_meal_app/views/add_meal.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -18,7 +19,9 @@ class _HomePageState extends State<HomePage> {
   checkPermissions() async {
     var status = await Permission.camera.status;
 
-    if(status.)
+    if(status.isGranted){
+
+    }
 
   }
 
@@ -115,8 +118,9 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
+        onPressed: () async {
+          Navigator.push(context,
+          MaterialPageRoute(builder: (context) => AddMeal()));
         },
         child: Icon(Icons.fastfood_outlined),
       ),
