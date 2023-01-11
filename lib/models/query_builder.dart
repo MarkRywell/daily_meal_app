@@ -84,8 +84,9 @@ class QueryBuilder {
 
     int status = await db.insert('foods', food.toMap());
 
-    status != 0 ?
+    if(status != 0) {
+    List<Map<String, Object?>> map = await db.rawQuery("SELECT MAX(id) FROM foods");
+    }
 
   }
-
 }
