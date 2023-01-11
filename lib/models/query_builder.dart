@@ -77,4 +77,15 @@ class QueryBuilder {
     return status;
   }
 
+
+  Future addFood (Food food) async {
+
+    Database db = await instance.getDatabase();
+
+    int status = await db.insert('foods', food.toMap());
+
+    status != 0 ?
+
+  }
+
 }
