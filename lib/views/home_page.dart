@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   List mealsList = [];
+  PermissionStatus permissionStatus = PermissionStatus.denied;
 
   checkPermissions() async {
 
@@ -24,30 +25,17 @@ class _HomePageState extends State<HomePage> {
       Permission.storage
     ].request();
 
-    if(statuses == PermissionStatus.denied) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            children: [
-              Lottie.asset('assets/error.json'),
-              const Text("User Permission Required to Access the App",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500
-              ),)
-            ],
-          )
-        ),
-      );
+    if(statuses[Permission.camera] == PermissionStatus.granted &&
+        statuses[Permission.storage] == PermissionStatus.granted) {
+      setState(() {
+        permissionStatus = PermissionStatus.granted;
+      });
     }
-    else if (statuses == PermissionStatus.permanentlyDenied) {
+   else if (statuses[Permission.camera] == PermissionStatus.permanentlyDenied ||
+       statuses[Permission.storage] == PermissionStatus.permanentlyDenied) {
       openAppSettings();
     }
-    // var status = await Permission.camera.status;
-    //
-    // if(status.isGranted){
-    //
-    // }
+
   }
 
   @override
@@ -62,7 +50,20 @@ class _HomePageState extends State<HomePage> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: FutureBuilder(
+      body: permissionStatus.isDenied ?
+      Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset('assets/error.json'),
+              const Text("User Permission Required to Access the App",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500
+                ),)
+            ],
+          )
+      ) : FutureBuilder(
         future: QueryBuilder.instance.mealDays(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
@@ -173,7 +174,8 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: permissionStatus == PermissionStatus.denied ? null :
+      FloatingActionButton(
         onPressed: () async {
           var newMeal = await Navigator.push(context,
           MaterialPageRoute(builder: (context) => const AddMeal()));
