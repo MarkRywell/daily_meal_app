@@ -1,13 +1,13 @@
 class MealDay {
 
-  final int id;
+  int? id;
   final String date;
   int? breakfast;
   int? lunch;
   int? dinner;
 
   MealDay({
-    required this.id,
+    this.id,
     required this.date,
     this.breakfast,
     this.lunch,
@@ -16,7 +16,7 @@ class MealDay {
 
   factory MealDay.fromMapObject(Map <String, Object?> json) {
     return MealDay(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       date: json['date'] as String,
       breakfast: json['breakfast'] as int,
       lunch: json['lunch'] as int,
