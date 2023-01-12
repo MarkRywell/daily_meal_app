@@ -36,7 +36,6 @@ class _AddMealState extends State<AddMeal> {
   int? photoId;
 
   File? image;
-  String? filePath;
 
   // Placeholder image variable for display
   File? breakfastImage;
@@ -48,6 +47,10 @@ class _AddMealState extends State<AddMeal> {
   int? breakfastId;
   int? lunchId;
   int? dinnerId;
+
+  String? breakfastImagePath;
+  String? lunchImagePath;
+  String? dinnerImagePath;
 
   String? breakfastFoodType;
   String? lunchFoodType;
@@ -140,19 +143,19 @@ class _AddMealState extends State<AddMeal> {
       if(image == null) return;
 
       final imagePerm = await saveImage(image.path);
-      filePath = imagePerm.path;
-
-      print(filePath);
 
       setState(() {
         if(photoId == 1) {
           breakfastImage = imagePerm;
+          breakfastImagePath = imagePerm.path;
         }
         else if(photoId == 2) {
           lunchImage = imagePerm;
+          lunchImagePath = imagePerm.path;
         }
         else if(photoId == 3) {
           dinnerImage = imagePerm;
+          dinnerImagePath = imagePerm.path;
         }
       });
 
@@ -376,7 +379,7 @@ class _AddMealState extends State<AddMeal> {
                                           var newFood = Food(
                                               name: breakfastController.text,
                                               foodType: breakfastFoodType!,
-                                              photo: filePath
+                                              photo: breakfastImagePath!
                                           );
 
                                           var foodId = await QueryBuilder.instance.addFood(newFood);
@@ -530,7 +533,7 @@ class _AddMealState extends State<AddMeal> {
                                         var newFood = Food(
                                             name: lunchController.text,
                                             foodType: lunchFoodType!,
-                                            photo: filePath!
+                                            photo: lunchImagePath!
                                         );
 
                                         var foodId = await QueryBuilder.instance.addFood(newFood);
@@ -684,7 +687,7 @@ class _AddMealState extends State<AddMeal> {
                                         var newFood = Food(
                                             name: dinnerController.text,
                                             foodType: dinnerFoodType!,
-                                            photo: filePath
+                                            photo: dinnerImagePath!
                                         );
 
                                         var foodId = await QueryBuilder.instance.addFood(newFood);
