@@ -18,12 +18,42 @@ class _HomePageState extends State<HomePage> {
   List mealsList = [];
 
   checkPermissions() async {
-    var status = await Permission.camera.status;
 
-    if(status.isGranted){
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.camera,
+      Permission.storage
+    ].request();
 
+    if(statuses == PermissionStatus.denied) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            children: [
+              Lottie.asset('assets/error.json'),
+              const Text("User Permission Required to Access the App",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500
+              ),)
+            ],
+          )
+        ),
+      );
     }
+    else if (statuses == PermissionStatus.permanentlyDenied) {
+      openAppSettings();
+    }
+    // var status = await Permission.camera.status;
+    //
+    // if(status.isGranted){
+    //
+    // }
+  }
 
+  @override
+  void initState() {
+    checkPermissions();
+    super.initState();
   }
 
   @override
@@ -70,11 +100,10 @@ class _HomePageState extends State<HomePage> {
                   child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          Container(
+                          SizedBox(
                             height: size.height * 0.2,
                             child: Lottie.asset('assets/foods.json'),
                           ),
-
                           const Text("You got no meals",
                               style: TextStyle(
                                   fontSize: 18,
@@ -127,8 +156,6 @@ class _HomePageState extends State<HomePage> {
                                   foods.add(['Dinner', dinnerFood]);
                                 }
 
-                                print(foods);
-
                                 Navigator.push(context,
                                 MaterialPageRoute(builder: (context)=> MealDetails(meal: meal, foods: foods)));
                               },
@@ -141,7 +168,7 @@ class _HomePageState extends State<HomePage> {
               }
             }
           }
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         },
@@ -149,7 +176,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           var newMeal = await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => AddMeal()));
+          MaterialPageRoute(builder: (context) => const AddMeal()));
 
           if(newMeal == null) {
             return;
@@ -160,7 +187,7 @@ class _HomePageState extends State<HomePage> {
           status != 0 ?  setState(() { mealsList.add(newMeal); }) : null;
 
         },
-        child: Icon(Icons.fastfood_outlined),
+        child: const Icon(Icons.fastfood_outlined),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
