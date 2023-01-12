@@ -6,7 +6,7 @@ class Food {
   String? photo;
 
   Food({
-    required this.id,
+    this.id,
     required this.name,
     required this.foodType,
     this.photo
@@ -14,7 +14,7 @@ class Food {
 
   factory Food.fromMapObject(Map <String, Object?> json) {
     return Food(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       name: json['name'] as String,
       foodType: json['foodType'] as String,
       photo: json['photo'] as String
