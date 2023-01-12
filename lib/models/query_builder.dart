@@ -86,7 +86,14 @@ class QueryBuilder {
 
     if(status != 0) {
     List<Map<String, Object?>> map = await db.rawQuery("SELECT MAX(id) FROM foods");
+    return map[0]['MAX(id)'];
     }
-
+  }
+  
+  Future deleteFood (int id) async {
+    
+    Database db = await instance.getDatabase();
+    
+    return await db.delete('foods', where: "id = ?", whereArgs: [id]);
   }
 }
