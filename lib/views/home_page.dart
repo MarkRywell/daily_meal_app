@@ -1,5 +1,6 @@
 import 'package:daily_meal_app/models/query_builder.dart';
 import 'package:daily_meal_app/views/add_meal.dart';
+import 'package:daily_meal_app/views/details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -102,8 +103,14 @@ class _HomePageState extends State<HomePage> {
 
                           final meal = mealsList[index];
 
-                          return ListTile(
-                            title: meal.date,
+                          return Card(
+                            child: ListTile(
+                              title: Text(meal.date),
+                              onTap: () {
+                                Navigator.push(context,
+                                MaterialPageRoute(builder: (context)=> MealDetails()));
+                              },
+                            ),
                           );
                         }
                     )
@@ -119,8 +126,17 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Navigator.push(context,
+          var newMeal = await Navigator.push(context,
           MaterialPageRoute(builder: (context) => AddMeal()));
+
+          if(newMeal == null) {
+            return;
+          }
+
+          int status = await QueryBuilder.instance.addMeal(newMeal);
+
+          status != 0 ?  setState(() { mealsList.add(newMeal); }) : null;
+
         },
         child: Icon(Icons.fastfood_outlined),
       ),
