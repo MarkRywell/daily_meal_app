@@ -1,10 +1,14 @@
 import 'dart:io';
 
+import 'package:daily_meal_app/models/meal_day.dart';
+import 'package:daily_meal_app/models/food.dart';
+import 'package:daily_meal_app/models/query_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart';
 
 class AddMeal extends StatefulWidget {
 
@@ -16,12 +20,35 @@ class AddMeal extends StatefulWidget {
 
 class _AddMealState extends State<AddMeal> {
 
-  var formKey = GlobalKey<FormState>();
+  var mealFormKey = GlobalKey<FormState>();
+  var breakfastFormKey = GlobalKey<FormState>();
+  var lunchFormKey = GlobalKey<FormState>();
+  var dinnerFormKey = GlobalKey<FormState>();
+
+  String breakfastButtonText = "Add Breakfast";
+  String lunchButtonText = "Add Lunch";
+  String dinnerButtonText = "Add Dinner";
+
+  int? breakfastButton = 1;
+  int? lunchButton = 1;
+  int? dinnerButton = 1;
+
+  int? photoId;
 
   File? image;
   String? filePath;
 
+  // Placeholder image variable for display
+  File? breakfastImage;
+  File? lunchImage;
+  File? dinnerImage;
+
   DateTime date = DateTime.now();
+
+  int? breakfastId;
+  int? lunchId;
+  int? dinnerId;
+
   String? breakfastFoodType;
   String? lunchFoodType;
   String? dinnerFoodType;
@@ -29,6 +56,19 @@ class _AddMealState extends State<AddMeal> {
   TextEditingController breakfastController = TextEditingController();
   TextEditingController lunchController = TextEditingController();
   TextEditingController dinnerController = TextEditingController();
+
+  @override
+  void dispose() {
+    breakfastId;
+    lunchId;
+    dinnerId;
+
+    breakfastController;
+    lunchController;
+    dinnerController;
+    super.dispose();
+  }
+
 
   Future <ImageSource?> chooseMedia() async {
 
@@ -81,8 +121,11 @@ class _AddMealState extends State<AddMeal> {
         }
     );
     if(source == null) {
+      setState(() {
+        photoId = 0;
+      });
       return null;
-    };
+    }
     pickImage(source);
   }
 
@@ -101,7 +144,17 @@ class _AddMealState extends State<AddMeal> {
 
       print(filePath);
 
-      setState(() => this.image = imagePerm);
+      setState(() {
+        if(photoId == 1) {
+          breakfastImage = imagePerm;
+        }
+        else if(photoId == 2) {
+          lunchImage = imagePerm;
+        }
+        else if(photoId == 3) {
+          dinnerImage = imagePerm;
+        }
+      });
 
     } on PlatformException catch(e) {
       print('Failed to pick image: $e');
@@ -116,6 +169,8 @@ class _AddMealState extends State<AddMeal> {
     return File(imagePath).copy(image.path);
   }
 
+
+
   @override
   Widget build(BuildContext context) {
 
@@ -123,20 +178,14 @@ class _AddMealState extends State<AddMeal> {
 
     return Scaffold(
       backgroundColor: Colors.green[100],
-
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        ),
       ),
       body: SingleChildScrollView(
         child: Form(
-          key: formKey,
+          key: mealFormKey,
           child: Padding(
             padding: EdgeInsets.all(10),
             child: Column(
@@ -178,9 +227,9 @@ class _AddMealState extends State<AddMeal> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal
-                            ),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal
+                              ),
                               onPressed: () async {
                                 DateTime? newDate = await showDatePicker(
                                     context: context,
@@ -204,127 +253,153 @@ class _AddMealState extends State<AddMeal> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                   child: ExpansionTile(
-                      title: Text("Breakfast"),
+                    title: Text("Breakfast"),
                     children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: TextFormField(
-                          controller: breakfastController,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            labelText: "Food Name",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20)
-                            )
-                          ),
-                          validator: (value) {
-                            return value == null || value.isEmpty ? "Complete breakfast details" : null;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        child: DropdownButtonFormField(
-                          hint: const Text("Food Type"),
-                          dropdownColor: Colors.green[50],
-                          borderRadius: BorderRadius.circular(20),
-                          items: const [
-                            DropdownMenuItem(
-                              value: "Fruits and Vegetables",
-                              child: Text("Fruits and Vegetables"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Starchy Food",
-                              child: Text("Starchy Food"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Dairy",
-                              child: Text("Dairy"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Protein",
-                              child: Text("Protein"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Fat",
-                              child: Text("Fat"),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            breakfastFoodType = value!;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: SizedBox(
-                            height: 50,
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                        onPressed: () async {
-                                          chooseMedia();
-                                        },
-                                        icon: const Icon(Icons.upload, color: Colors.teal),
-                                        iconSize: 40,
-                                        color: Colors.blue
-                                    ),
-                                    const Padding(
-                                        padding: EdgeInsetsDirectional.only(top: 5)),
-                                    const Text(
-                                      "Upload Photo",
-                                      style: TextStyle(fontSize: 20),
-                                    )
-                                  ],
-                                )
-                            )
-                        ),
-                      ),
-                      image != null ?
-                      Container(
-                        constraints: BoxConstraints(
-                            minHeight: 150,
-                            maxWidth: 150
-                        ),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black)
-                        ),
-                        child: Image.file(image!), height: 200, width: 200,):
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.black)
-                        ),
-                        child: Center(
-                            child: Text("No image selected")),
-                        height: 200,
-                        width: 200,
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            height: 40,
-                            width: size.width * 0.5,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal
+                      Form(
+                        key: breakfastFormKey,
+                        child: Column(
+                            children:[
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                child: TextFormField(
+                                  controller: breakfastController,
+                                  keyboardType: TextInputType.text,
+                                  decoration: InputDecoration(
+                                      labelText: "Food Name",
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(20)
+                                      )
+                                  ),
+                                  validator: (value) {
+                                    return value == null || value.isEmpty ? "Complete breakfast details" : null;
+                                  },
+                                ),
                               ),
-                              onPressed: () {
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                child: DropdownButtonFormField(
+                                  hint: const Text("Food Type"),
+                                  dropdownColor: Colors.green[50],
+                                  borderRadius: BorderRadius.circular(20),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: "Fruits and Vegetables",
+                                      child: Text("Fruits and Vegetables"),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: "Starchy Food",
+                                      child: Text("Starchy Food"),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: "Dairy",
+                                      child: Text("Dairy"),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: "Protein",
+                                      child: Text("Protein"),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: "Fat",
+                                      child: Text("Fat"),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    breakfastFoodType = value!;
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                child: SizedBox(
+                                    height: 50,
+                                    child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                                onPressed: () async {
+                                                  setState(() {
+                                                    photoId = 1;
+                                                  });
+                                                  chooseMedia();
+                                                },
+                                                icon: const Icon(Icons.upload, color: Colors.teal),
+                                                iconSize: 40,
+                                                color: Colors.blue
+                                            ),
+                                            const Padding(
+                                                padding: EdgeInsetsDirectional.only(top: 5)),
+                                            const Text(
+                                              "Upload Photo",
+                                              style: TextStyle(fontSize: 20),
+                                            )
+                                          ],
+                                        )
+                                    )
+                                ),
+                              ),
+                              breakfastImage != null ?
+                              Container(
+                                constraints: BoxConstraints(
+                                    minHeight: 150,
+                                    maxWidth: 150
+                                ),
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.black)
+                                ),
+                                child: Image.file(breakfastImage!), height: 200, width: 200,):
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.black)
+                                ),
+                                child: Center(
+                                    child: Text("No image selected")),
+                                height: 200,
+                                width: 200,
+                              ),
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    height: 40,
+                                    width: size.width * 0.5,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.teal
+                                      ),
+                                      onPressed: breakfastButton == 0 ? null : () async {
+                                        if(breakfastFormKey.currentState!.validate()) {
 
-                              },
-                              child: Text("Add Breakfast",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15
-                              ),),
-                            ),
-                          ),
+                                          var newFood = Food(
+                                              name: breakfastController.text,
+                                              foodType: breakfastFoodType!,
+                                              photo: filePath
+                                          );
+
+                                          var foodId = await QueryBuilder.instance.addFood(newFood);
+
+                                          setState(() {
+                                            breakfastId = foodId;
+                                            breakfastButton = 0;
+                                            breakfastButtonText = "Breakfast Added";
+                                          });
+                                        }
+                                      },
+                                      child: Text(breakfastButtonText,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15
+                                        ),),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ]
                         ),
+
                       )
                     ],
                   ),
@@ -334,124 +409,149 @@ class _AddMealState extends State<AddMeal> {
                   child: ExpansionTile(
                     title: Text("Lunch"),
                     children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: TextFormField(
-                          controller: breakfastController,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                              labelText: "Food Name",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20)
-                              )
-                          ),
-                          validator: (value) {
-                            return value == null || value.isEmpty ? "Complete lunch details" : null;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        child: DropdownButtonFormField(
-                          hint: const Text("Food Type"),
-                          dropdownColor: Colors.green[50],
-                          borderRadius: BorderRadius.circular(20),
-                          items: const [
-                            DropdownMenuItem(
-                              value: "Fruits and Vegetables",
-                              child: Text("Fruits and Vegetables"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Starchy Food",
-                              child: Text("Starchy Food"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Dairy",
-                              child: Text("Dairy"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Protein",
-                              child: Text("Protein"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Fat",
-                              child: Text("Fat"),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            breakfastFoodType = value!;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: SizedBox(
-                            height: 50,
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                        onPressed: () async {
-                                          chooseMedia();
-                                        },
-                                        icon: const Icon(Icons.upload, color: Colors.teal),
-                                        iconSize: 40,
-                                        color: Colors.blue
-                                    ),
-                                    const Padding(
-                                        padding: EdgeInsetsDirectional.only(top: 5)),
-                                    const Text(
-                                      "Upload Photo",
-                                      style: TextStyle(fontSize: 20),
+                      Form(
+                        key: lunchFormKey,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                              child: TextFormField(
+                                controller: lunchController,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                    labelText: "Food Name",
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20)
                                     )
-                                  ],
-                                )
-                            )
-                        ),
-                      ),
-                      image != null ?
-                      Container(
-                        constraints: BoxConstraints(
-                            minHeight: 150,
-                            maxWidth: 150
-                        ),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black)
-                        ),
-                        child: Image.file(image!), height: 200, width: 200,):
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.black)
-                        ),
-                        child: Center(
-                            child: Text("No image selected")),
-                        height: 200,
-                        width: 200,
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            height: 40,
-                            width: size.width * 0.5,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal
+                                ),
+                                validator: (value) {
+                                  return value == null || value.isEmpty ? "Complete lunch details" : null;
+                                },
                               ),
-                              onPressed: () {
-
-                              },
-                              child: Text("Add Dinner",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15
-                                ),),
                             ),
-                          ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                              child: DropdownButtonFormField(
+                                hint: const Text("Food Type"),
+                                dropdownColor: Colors.green[50],
+                                borderRadius: BorderRadius.circular(20),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: "Fruits and Vegetables",
+                                    child: Text("Fruits and Vegetables"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Starchy Food",
+                                    child: Text("Starchy Food"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Dairy",
+                                    child: Text("Dairy"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Protein",
+                                    child: Text("Protein"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Fat",
+                                    child: Text("Fat"),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  lunchFoodType = value!;
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                              child: SizedBox(
+                                  height: 50,
+                                  child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                              onPressed: () async {
+                                                setState(() {
+                                                  photoId = 2;
+                                                });
+                                                chooseMedia();
+                                              },
+                                              icon: const Icon(Icons.upload, color: Colors.teal),
+                                              iconSize: 40,
+                                              color: Colors.blue
+                                          ),
+                                          const Padding(
+                                              padding: EdgeInsetsDirectional.only(top: 5)),
+                                          const Text(
+                                            "Upload Photo",
+                                            style: TextStyle(fontSize: 20),
+                                          )
+                                        ],
+                                      )
+                                  )
+                              ),
+                            ),
+                            lunchImage != null ?
+                            Container(
+                              constraints: BoxConstraints(
+                                  minHeight: 150,
+                                  maxWidth: 150
+                              ),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black)
+                              ),
+                              child: Image.file(lunchImage!), height: 200, width: 200,):
+                            Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.black)
+                              ),
+                              child: Center(
+                                  child: Text("No image selected")),
+                              height: 200,
+                              width: 200,
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  height: 40,
+                                  width: size.width * 0.5,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal
+                                    ),
+                                    onPressed: lunchButton == 0 ? null : () async {
+                                      if(lunchFormKey.currentState!.validate()) {
+
+                                        var newFood = Food(
+                                            name: lunchController.text,
+                                            foodType: lunchFoodType!,
+                                            photo: filePath!
+                                        );
+
+                                        var foodId = await QueryBuilder.instance.addFood(newFood);
+
+                                        setState(() {
+                                          lunchId = foodId;
+                                          lunchButton = 0;
+                                          lunchButtonText = "Lunch Added";
+                                        });
+                                      }
+                                    },
+                                    child: Text(lunchButtonText,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15
+                                      ),),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
                         ),
                       )
                     ],
@@ -462,125 +562,150 @@ class _AddMealState extends State<AddMeal> {
                   child: ExpansionTile(
                     title: Text("Dinner"),
                     children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: TextFormField(
-                          controller: breakfastController,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                              labelText: "Food Name",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20)
-                              )
-                          ),
-                          validator: (value) {
-                            return value == null || value.isEmpty ? "Complete dinner details" : null;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        child: DropdownButtonFormField(
-                          hint: const Text("Food Type"),
-                          dropdownColor: Colors.green[50],
-                          borderRadius: BorderRadius.circular(20),
-
-                          items: const [
-                            DropdownMenuItem(
-                              value: "Fruits and Vegetables",
-                              child: Text("Fruits and Vegetables"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Starchy Food",
-                              child: Text("Starchy Food"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Dairy",
-                              child: Text("Dairy"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Protein",
-                              child: Text("Protein"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Fat",
-                              child: Text("Fat"),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            breakfastFoodType = value!;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: SizedBox(
-                            height: 50,
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                        onPressed: () async {
-                                          chooseMedia();
-                                        },
-                                        icon: const Icon(Icons.upload, color: Colors.teal),
-                                        iconSize: 40,
-                                        color: Colors.blue
-                                    ),
-                                    const Padding(
-                                        padding: EdgeInsetsDirectional.only(top: 5)),
-                                    const Text(
-                                      "Upload Photo",
-                                      style: TextStyle(fontSize: 20),
+                      Form(
+                        key: dinnerFormKey,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                              child: TextFormField(
+                                controller: dinnerController,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                    labelText: "Food Name",
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20)
                                     )
-                                  ],
-                                )
-                            )
-                        ),
-                      ),
-                      image != null ?
-                      Container(
-                        constraints: BoxConstraints(
-                            minHeight: 150,
-                            maxWidth: 150
-                        ),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black)
-                        ),
-                        child: Image.file(image!), height: 200, width: 200,):
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.black)
-                        ),
-                        child: Center(
-                            child: Text("No image selected")),
-                        height: 200,
-                        width: 200,
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            height: 40,
-                            width: size.width * 0.5,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal
+                                ),
+                                validator: (value) {
+                                  return value == null || value.isEmpty ? "Complete dinner details" : null;
+                                },
                               ),
-                              onPressed: () {
-
-                              },
-                              child: Text("Add Dinner",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15
-                                ),),
                             ),
-                          ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                              child: DropdownButtonFormField(
+                                hint: const Text("Food Type"),
+                                dropdownColor: Colors.green[50],
+                                borderRadius: BorderRadius.circular(20),
+
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: "Fruits and Vegetables",
+                                    child: Text("Fruits and Vegetables"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Starchy Food",
+                                    child: Text("Starchy Food"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Dairy",
+                                    child: Text("Dairy"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Protein",
+                                    child: Text("Protein"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Fat",
+                                    child: Text("Fat"),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  dinnerFoodType = value!;
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                              child: SizedBox(
+                                  height: 50,
+                                  child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                              onPressed: () async {
+                                                setState(() {
+                                                  photoId = 3;
+                                                });
+                                                chooseMedia();
+                                              },
+                                              icon: const Icon(Icons.upload, color: Colors.teal),
+                                              iconSize: 40,
+                                              color: Colors.blue
+                                          ),
+                                          const Padding(
+                                              padding: EdgeInsetsDirectional.only(top: 5)),
+                                          const Text(
+                                            "Upload Photo",
+                                            style: TextStyle(fontSize: 20),
+                                          )
+                                        ],
+                                      )
+                                  )
+                              ),
+                            ),
+                            dinnerImage != null ?
+                            Container(
+                              constraints: BoxConstraints(
+                                  minHeight: 150,
+                                  maxWidth: 150
+                              ),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black)
+                              ),
+                              child: Image.file(dinnerImage!), height: 200, width: 200,):
+                            Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.black)
+                              ),
+                              child: Center(
+                                  child: Text("No image selected")),
+                              height: 200,
+                              width: 200,
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  height: 40,
+                                  width: size.width * 0.5,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal
+                                    ),
+                                    onPressed: dinnerButton == 0 ? null : () async {
+                                      if(dinnerFormKey.currentState!.validate()) {
+
+                                        var newFood = Food(
+                                            name: dinnerController.text,
+                                            foodType: dinnerFoodType!,
+                                            photo: filePath
+                                        );
+
+                                        var foodId = await QueryBuilder.instance.addFood(newFood);
+
+                                        setState(() {
+                                          dinnerId = foodId;
+                                          dinnerButton = 0;
+                                          dinnerButtonText = "Dinner Added";
+                                        });
+                                      }
+                                    },
+                                    child: Text(dinnerButtonText,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15
+                                      ),),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
                         ),
                       )
                     ],
@@ -598,10 +723,53 @@ class _AddMealState extends State<AddMeal> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.teal
                         ),
-                        onPressed: () {
+                        onPressed: breakfastId == null && lunchId == null && dinnerId == null ? null : () {
+                          if(mealFormKey.currentState!.validate()) {
 
+                            String dateFormat = DateFormat('EEEE, MMM d, yyyy').format(date);
+
+                              var newMeal = MealDay(
+                                  date: dateFormat,
+                                  breakfast: breakfastId,
+                                  lunch: lunchId,
+                                  dinner: dinnerId
+                              );
+
+                              Navigator.pop(context, newMeal);
+                          }
                         },
                         child: Text("Add Meal",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15
+                          ),),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      height: 40,
+                      width: size.width * 0.5,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[300]
+                        ),
+                        onPressed: () async {
+                          List data = [breakfastId, lunchId, dinnerId];
+
+                          for(int? id in data) {
+                            if(id != null) {
+                              await QueryBuilder.instance.deleteFood(id);
+                            }
+                          }
+
+                          Navigator.pop(context);
+                        },
+                        child: Text("Cancel",
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15
