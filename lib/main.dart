@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(
-      const MaterialApp(
+      MaterialApp(
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          fontFamily: 'Raleway'
+        ),
         home: HomePage(),
       ));
 }
