@@ -104,11 +104,33 @@ class _HomePageState extends State<HomePage> {
                           final meal = mealsList[index];
 
                           return Card(
+                            key: UniqueKey(),
                             child: ListTile(
                               title: Text(meal.date),
-                              onTap: () {
+                              onTap: () async {
+
+                                List foods = [];
+
+                                if(meal.breakfast != null) {
+                                  var breakfastFood = await QueryBuilder.instance.food(meal.breakfast);
+
+                                  foods.add(['Breakfast', breakfastFood]);
+                                }
+                                if(meal.lunch != null) {
+                                  var lunchFood = await QueryBuilder.instance.food(meal.lunch);
+
+                                  foods.add(['Lunch', lunchFood]);
+                                }
+                                if(meal.dinner != null) {
+                                  var dinnerFood = await QueryBuilder.instance.food(meal.dinner);
+
+                                  foods.add(['Dinner', dinnerFood]);
+                                }
+
+                                print(foods);
+
                                 Navigator.push(context,
-                                MaterialPageRoute(builder: (context)=> MealDetails()));
+                                MaterialPageRoute(builder: (context)=> MealDetails(meal: meal, foods: foods)));
                               },
                             ),
                           );
