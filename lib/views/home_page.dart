@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                 return NestedScrollView(
                   floatHeaderSlivers: true,
                     headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                      SliverAppBar(
+                      const SliverAppBar(
                         title: Text("Daily Meal"),
                         centerTitle: true,
                         backgroundColor: Colors.greenAccent,
