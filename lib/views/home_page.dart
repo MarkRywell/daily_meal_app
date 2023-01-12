@@ -56,11 +56,18 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Lottie.asset('assets/error.json'),
-              const Text("User Permission Required to Access the App",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500
-                ),)
+              Container(
+                width: size.width * 0.5,
+                height: size.height * 0.2,
+                child: const Text("User Permission Required to Access the App",
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      height: 2,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500
+                  ),),
+              )
             ],
           )
       ) : FutureBuilder(
